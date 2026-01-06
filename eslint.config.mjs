@@ -1,43 +1,66 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import prettierPlugin from 'eslint-plugin-prettier';
-
-// Extract Prettier rules
-import prettierConfig from 'eslint-config-prettier';
-
-// Prettier rules object
-const prettierRules = prettierConfig.rules || {};
+import js from "@eslint/js";
+import globals from "globals";
+import prettierPlugin from "eslint-plugin-prettier";
+import reactPlugin from "eslint-plugin-react";
+import reactHooksPlugin from "eslint-plugin-react-hooks";
+import babelParser from "@babel/eslint-parser";
 
 export default [
-  js.configs.recommended,
-
+  // Node backend
   {
-    files: ['**/*.js', '**/*.mjs'],
+    files: ["apps/backend/**/*.js", "apps/backend/**/*.mjs"],
     languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
+      ecmaVersion: "latest",
+      sourceType: "module",
       globals: {
-        ...globals.node,
+        ...globals.node
+      }
+    },
+    rules: {
+      "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      "no-console": "off",
+      eqeqeq: ["error", "always"],
+      "no-var": "error",
+      "prefer-const": "error",
+      curly: ["error", "all"]
+    }
+  },
+
+  // React frontend
+  {
+    files: ["apps/frontend/**/*.js", "apps/frontend/**/*.jsx"],
+    languageOptions: {
+      parser: babelParser,
+      parserOptions: {
+        requireConfigFile: false,
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: { jsx: true },
+        babelOptions: {
+          presets: ["@babel/preset-react"] // ✅ crucial
+        }
       },
+      globals: {
+        React: "readonly"
+      }
     },
     plugins: {
       prettier: prettierPlugin,
+      react: reactPlugin,
+      "react-hooks": reactHooksPlugin
     },
     rules: {
-      ...prettierRules, // Apply Prettier rules
-      'prettier/prettier': 'error', // Formatting errors become ESLint errors
+      "prettier/prettier": "error",
+      "react/react-in-jsx-scope": "off",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
 
-      /* Code quality */
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      'no-console': 'off',
-
-      /* Safety */
-      eqeqeq: ['error', 'always'],
-      'no-var': 'error',
-      'prefer-const': 'error',
-
-      /* Readability */
-      curly: ['error', 'all'],
-    },
-  },
+      "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      "no-console": "off",
+      eqeqeq: ["error", "always"],
+      "no-var": "error",
+      "prefer-const": "error",
+      curly: ["error", "all"]
+    }
+  }
 ];
