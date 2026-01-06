@@ -1,1 +1,1 @@
-console.log("🚀 Vibe coder template ready.");
+console.log('🚀 Vibe coder template ready.');
