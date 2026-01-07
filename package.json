@@ -5,10 +5,10 @@
     "scripts": {
         "dev:frontend": "cd apps/frontend && npm install && npm run dev",
         "dev:backend": "cd apps/backend && npm install && npm run dev",
-        "lint": "eslint .",
-        "lint:fix": "eslint . --fix",
-        "test": "npm run lint",
-        "format": "prettier --write ."
+        "lint": "npx eslint .",
+        "lint:fix": "npx eslint . --fix",
+        "format": "npx prettier --write .",
+        "test": "npm run lint"
     },
     "devDependencies": {
         "@babel/eslint-parser": "^7.28.5",
