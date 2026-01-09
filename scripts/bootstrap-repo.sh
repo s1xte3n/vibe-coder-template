@@ -66,27 +66,32 @@ gh api -X PUT "repos/$REPO/automated-security-fixes" >/dev/null 2>&1 || true
 # -----------------------------
 # Apply branch protection
 # -----------------------------
+PROTECT_BRANCH_PAYLOAD='{
+  "required_status_checks": {
+    "strict": true,
+    "contexts": ["ci"]
+  },
+  "enforce_admins": true,
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 1
+  },
+  "restrictions": {
+    "users": [],
+    "teams": []
+  }
+}'
+
 # Protect develop branch
 echo "🔒 Protecting 'develop' branch..."
 gh api -X PUT "repos/$REPO/branches/develop/protection" \
   -H "Accept: application/vnd.github+json" \
-  -f required_status_checks.strict=true \
-  -f required_status_checks.contexts='["ci"]' \
-  -f enforce_admins=true \
-  -f required_pull_request_reviews.required_approving_review_count=1 \
-  -f restrictions.users='[]' \
-  -f restrictions.teams='[]'
+  -f body="$PROTECT_BRANCH_PAYLOAD"
 
 # Protect main branch
 echo "🔒 Protecting 'main' branch..."
 gh api -X PUT "repos/$REPO/branches/main/protection" \
   -H "Accept: application/vnd.github+json" \
-  -f required_status_checks.strict=true \
-  -f required_status_checks.contexts='["ci"]' \
-  -f enforce_admins=true \
-  -f required_pull_request_reviews.required_approving_review_count=1 \
-  -f restrictions.users='[]' \
-  -f restrictions.teams='[]'
+  -f body="$PROTECT_BRANCH_PAYLOAD"
 
 # -----------------------------
 # Add badges & banner to README
