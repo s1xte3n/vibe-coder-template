@@ -3,68 +3,78 @@ set -e
 
 echo "🚀 Bootstrapping Vibe Coder Template repository..."
 
-# ---------- Checks ----------
-command -v gh >/dev/null 2>&1 || {
+# -----------------------------
+# Preconditions
+# -----------------------------
+if ! command -v gh &>/dev/null; then
   echo "❌ GitHub CLI (gh) is not installed."
+  echo "👉 Install from: https://cli.github.com/"
   exit 1
-}
+fi
 
-gh auth status >/dev/null 2>&1 || {
-  echo "❌ GitHub CLI not authenticated. Run: gh auth login"
+if ! gh auth status &>/dev/null; then
+  echo "❌ GitHub CLI is not authenticated."
+  echo "👉 Run: gh auth login"
   exit 1
-}
+fi
 
-OWNER=$(gh repo view --json owner -q .owner.login)
-REPO=$(gh repo view --json name -q .name)
+if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+  echo "❌ Not inside a git repository."
+  exit 1
+fi
 
-echo "📦 Repo: $OWNER/$REPO"
+# -----------------------------
+# Repo Info
+# -----------------------------
+REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+echo "📦 Repo: $REPO"
 
-# ---------- Branch Setup ----------
-echo "🔀 Setting default branch to 'develop'..."
-gh api repos/$OWNER/$REPO --method PATCH \
-  -f default_branch='develop'
+# -----------------------------
+# Ensure develop branch exists
+# -----------------------------
+echo "🔀 Ensuring 'develop' branch exists..."
 
-# ---------- Branch Protection ----------
-echo "🔒 Enabling branch protection on main..."
+if git show-ref --quiet refs/heads/develop; then
+  git checkout develop
+else
+  git checkout -b develop
+fi
 
-gh api repos/$OWNER/$REPO/branches/main/protection \
-  --method PUT \
-  --input - <<EOF
-{
-  "required_status_checks": {
-    "strict": true,
-    "contexts": ["ci"]
-  },
-  "enforce_admins": true,
-  "required_pull_request_reviews": {
-    "required_approving_review_count": 1,
-    "dismiss_stale_reviews": true
-  },
-  "restrictions": null
-}
-EOF
+git push -u origin develop || true
 
-# ---------- GitHub Pages ----------
-echo "📄 Enabling GitHub Pages (docs folder)..."
+# -----------------------------
+# Set default branch
+# -----------------------------
+echo "⭐ Setting default branch to 'develop'..."
+gh repo edit "$REPO" --default-branch develop
 
-gh api repos/$OWNER/$REPO/pages \
-  --method POST \
-  -f source.branch='main' \
-  -f source.path='/docs' || echo "ℹ️ Pages may already be enabled."
+# -----------------------------
+# Enable recommended features
+# -----------------------------
+echo "🧩 Enabling repository features..."
 
-# ---------- Environments ----------
-echo "🌍 Creating environments..."
+gh repo edit "$REPO" \
+  --enable-issues=true \
+  --enable-projects=true \
+  --enable-wiki=false
 
-gh api repos/$OWNER/$REPO/environments/staging --method PUT
-gh api repos/$OWNER/$REPO/environments/production --method PUT
+# -----------------------------
+# Enable security features (public repos)
+# -----------------------------
+echo "🔐 Enabling security features (where available)..."
 
-# ---------- Labels ----------
-echo "🏷 Adding deployment labels..."
+gh api -X PUT "repos/$REPO/vulnerability-alerts" >/dev/null 2>&1 || true
+gh api -X PUT "repos/$REPO/automated-security-fixes" >/dev/null 2>&1 || true
 
-gh label create deploy:staging --color 0E8A16 --force
-gh label create deploy:production --color 5319E7 --force
-gh label create destroy:env --color B60205 --force
-
-# ---------- Done ----------
-echo "✅ Repository successfully bootstrapped!"
-echo "🎉 Your template is now fully enforced and production-ready."
+# -----------------------------
+# Final message
+# -----------------------------
+echo ""
+echo "✅ Vibe Coder Template bootstrap complete!"
+echo ""
+echo "Next steps:"
+echo "• Set up branch protection rules in GitHub UI"
+echo "• Push your first feature branch"
+echo "• Let CI enforce quality"
+echo ""
+echo "🧠 Remember: automate early, commit often, ship calmly."
