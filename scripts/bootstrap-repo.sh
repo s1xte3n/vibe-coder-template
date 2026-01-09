@@ -64,9 +64,14 @@ gh api -X PUT "repos/$REPO/vulnerability-alerts" >/dev/null 2>&1 || true
 gh api -X PUT "repos/$REPO/automated-security-fixes" >/dev/null 2>&1 || true
 
 # -----------------------------
-# Apply branch protection
+# Apply branch protection (fixed)
 # -----------------------------
-PROTECT_BRANCH_PAYLOAD='{
+echo "🔒 Protecting branches..."
+
+# Temporary JSON payload for branch protection
+BRANCH_PROTECTION_JSON=$(mktemp)
+cat > "$BRANCH_PROTECTION_JSON" << EOF
+{
   "required_status_checks": {
     "strict": true,
     "contexts": ["ci"]
@@ -79,19 +84,20 @@ PROTECT_BRANCH_PAYLOAD='{
     "users": [],
     "teams": []
   }
-}'
+}
+EOF
 
-# Protect develop branch
-echo "🔒 Protecting 'develop' branch..."
+# Apply protection to develop branch
 gh api -X PUT "repos/$REPO/branches/develop/protection" \
   -H "Accept: application/vnd.github+json" \
-  -f body="$PROTECT_BRANCH_PAYLOAD"
+  --input "$BRANCH_PROTECTION_JSON"
 
-# Protect main branch
-echo "🔒 Protecting 'main' branch..."
+# Apply protection to main branch
 gh api -X PUT "repos/$REPO/branches/main/protection" \
   -H "Accept: application/vnd.github+json" \
-  -f body="$PROTECT_BRANCH_PAYLOAD"
+  --input "$BRANCH_PROTECTION_JSON"
+
+rm "$BRANCH_PROTECTION_JSON"
 
 # -----------------------------
 # Add badges & banner to README
