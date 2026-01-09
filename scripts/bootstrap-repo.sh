@@ -33,7 +33,6 @@ echo "📦 Repo: $REPO"
 # Ensure develop branch exists
 # -----------------------------
 echo "🔀 Ensuring 'develop' branch exists..."
-
 if git show-ref --quiet refs/heads/develop; then
   git checkout develop
 else
@@ -49,22 +48,65 @@ echo "⭐ Setting default branch to 'develop'..."
 gh repo edit "$REPO" --default-branch develop
 
 # -----------------------------
-# Enable recommended features
+# Enable repository features
 # -----------------------------
 echo "🧩 Enabling repository features..."
-
 gh repo edit "$REPO" \
   --enable-issues=true \
   --enable-projects=true \
   --enable-wiki=false
 
 # -----------------------------
-# Enable security features (public repos)
+# Enable security features
 # -----------------------------
 echo "🔐 Enabling security features (where available)..."
-
 gh api -X PUT "repos/$REPO/vulnerability-alerts" >/dev/null 2>&1 || true
 gh api -X PUT "repos/$REPO/automated-security-fixes" >/dev/null 2>&1 || true
+
+# -----------------------------
+# Apply branch protection
+# -----------------------------
+echo "🔒 Applying branch protection rules..."
+
+# Protect develop
+gh api -X PUT "repos/$REPO/branches/develop/protection" \
+  -F required_status_checks='{"strict":true,"contexts":["ci"]}' \
+  -F enforce_admins=true \
+  -F required_pull_request_reviews='{"required_approving_review_count":1}' \
+  -F restrictions='{"users":[],"teams":[]}'
+
+# Protect main
+gh api -X PUT "repos/$REPO/branches/main/protection" \
+  -F required_status_checks='{"strict":true,"contexts":["ci"]}' \
+  -F enforce_admins=true \
+  -F required_pull_request_reviews='{"required_approving_review_count":1}' \
+  -F restrictions='{"users":[],"teams":[]}'
+
+# -----------------------------
+# Add badges & banner to README
+# -----------------------------
+echo "🏷 Adding default badges & banner to README..."
+README_FILE="README.md"
+
+# CI badge
+if ! grep -q "workflow/status" "$README_FILE"; then
+  echo -e "\n![CI](https://github.com/$REPO/actions/workflows/ci.yml/badge.svg)" >> "$README_FILE"
+fi
+
+# License badge
+if ! grep -q "license" "$README_FILE"; then
+  echo -e "\n![License](https://img.shields.io/badge/license-MIT-green.svg)" >> "$README_FILE"
+fi
+
+# Banner GIF
+if ! grep -q "vibe-coder-banner" "$README_FILE"; then
+  echo -e "\n![Vibe Coder Banner](https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif)" >> "$README_FILE"
+fi
+
+# Stage & commit README changes
+git add "$README_FILE"
+git commit -m "chore: add default badges & banner to README" || true
+git push origin develop
 
 # -----------------------------
 # Final message
@@ -73,7 +115,6 @@ echo ""
 echo "✅ Vibe Coder Template bootstrap complete!"
 echo ""
 echo "Next steps:"
-echo "• Set up branch protection rules in GitHub UI"
 echo "• Push your first feature branch"
 echo "• Let CI enforce quality"
 echo ""
