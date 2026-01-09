@@ -64,25 +64,25 @@ gh api -X PUT "repos/$REPO/vulnerability-alerts" >/dev/null 2>&1 || true
 gh api -X PUT "repos/$REPO/automated-security-fixes" >/dev/null 2>&1 || true
 
 # -----------------------------
-# Apply branch protection (Option 2: PR workflow)
+# Apply branch protection (personal repo safe)
 # -----------------------------
-echo "🔒 Protecting 'develop' branch via PR workflow..."
+echo "🔒 Protecting 'develop' branch..."
 gh api -X PUT "repos/$REPO/branches/develop/protection" \
   -H "Accept: application/vnd.github+json" \
   -f required_status_checks='{"strict":true,"contexts":["ci"]}' \
-  -f enforce_admins='{"enabled":true}' \
-  -f required_pull_request_reviews='{"required_approving_review_count":1,"dismiss_stale_reviews":false,"require_code_owner_reviews":false}' \
-  -f allow_force_pushes='{"enabled":false}' \
-  -f allow_deletions='{"enabled":false}'
+  -f enforce_admins=true \
+  -f required_pull_request_reviews='{"required_approving_review_count":1}' \
+  -f allow_force_pushes=false \
+  -f allow_deletions=false
 
-echo "🔒 Protecting 'main' branch via PR workflow..."
+echo "🔒 Protecting 'main' branch..."
 gh api -X PUT "repos/$REPO/branches/main/protection" \
   -H "Accept: application/vnd.github+json" \
   -f required_status_checks='{"strict":true,"contexts":["ci"]}' \
-  -f enforce_admins='{"enabled":true}' \
-  -f required_pull_request_reviews='{"required_approving_review_count":1,"dismiss_stale_reviews":false,"require_code_owner_reviews":false}' \
-  -f allow_force_pushes='{"enabled":false}' \
-  -f allow_deletions='{"enabled":false}'
+  -f enforce_admins=true \
+  -f required_pull_request_reviews='{"required_approving_review_count":1}' \
+  -f allow_force_pushes=false \
+  -f allow_deletions=false
 
 # -----------------------------
 # Add badges & banner to README
@@ -105,20 +105,19 @@ if ! grep -q "vibe-coder-banner" "$README_FILE"; then
   echo -e "\n![Vibe Coder Banner](https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif)" >> "$README_FILE"
 fi
 
-# Stage & commit README changes
+# Stage & commit README changes on develop branch
 git add "$README_FILE"
 git commit -m "chore: add default badges & banner to README" || true
+git push origin develop || true
 
-# Push changes to a feature branch if develop is protected
-FEATURE_BRANCH="bootstrap-readme"
-git checkout -b $FEATURE_BRANCH || git checkout $FEATURE_BRANCH
-git push -u origin $FEATURE_BRANCH
-
+# -----------------------------
+# Final message
+# -----------------------------
 echo ""
 echo "✅ Vibe Coder Template bootstrap complete!"
 echo ""
 echo "Next steps:"
-echo "• Open a pull request from '$FEATURE_BRANCH' to 'develop'"
+echo "• Push your first feature branch"
 echo "• Let CI enforce quality"
 echo ""
 echo "🧠 Remember: automate early, commit often, ship calmly."
