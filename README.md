@@ -14,7 +14,7 @@
 - CI: GitHub Actions
 - Infra-ready: AWS / Serverless / Terraform friendly
 
-### 🚀 One-Click Repository Setup (Required)
+## 🚀 One-Click Repository Setup (Required)
 
 After creating a repo from this template, run:
 
