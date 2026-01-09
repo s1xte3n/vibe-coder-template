@@ -64,11 +64,10 @@ gh api -X PUT "repos/$REPO/vulnerability-alerts" >/dev/null 2>&1 || true
 gh api -X PUT "repos/$REPO/automated-security-fixes" >/dev/null 2>&1 || true
 
 # -----------------------------
-# Apply branch protection (works for personal repos)
+# Apply branch protection (personal repo safe)
 # -----------------------------
-echo "🔒 Protecting branches..."
+echo "🔒 Protecting 'develop' and 'main' branches..."
 
-# Temporary JSON payload for branch protection
 BRANCH_PROTECTION_JSON=$(mktemp)
 cat > "$BRANCH_PROTECTION_JSON" << EOF
 {
@@ -79,16 +78,17 @@ cat > "$BRANCH_PROTECTION_JSON" << EOF
   "enforce_admins": true,
   "required_pull_request_reviews": {
     "required_approving_review_count": 1
-  }
+  },
+  "restrictions": null
 }
 EOF
 
-# Apply protection to develop branch
+# Protect develop
 gh api -X PUT "repos/$REPO/branches/develop/protection" \
   -H "Accept: application/vnd.github+json" \
   --input "$BRANCH_PROTECTION_JSON"
 
-# Apply protection to main branch
+# Protect main
 gh api -X PUT "repos/$REPO/branches/main/protection" \
   -H "Accept: application/vnd.github+json" \
   --input "$BRANCH_PROTECTION_JSON"
