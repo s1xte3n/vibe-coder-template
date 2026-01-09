@@ -64,7 +64,7 @@ gh api -X PUT "repos/$REPO/vulnerability-alerts" >/dev/null 2>&1 || true
 gh api -X PUT "repos/$REPO/automated-security-fixes" >/dev/null 2>&1 || true
 
 # -----------------------------
-# Apply branch protection (fixed)
+# Apply branch protection (works for personal repos)
 # -----------------------------
 echo "🔒 Protecting branches..."
 
@@ -79,10 +79,6 @@ cat > "$BRANCH_PROTECTION_JSON" << EOF
   "enforce_admins": true,
   "required_pull_request_reviews": {
     "required_approving_review_count": 1
-  },
-  "restrictions": {
-    "users": [],
-    "teams": []
   }
 }
 EOF
