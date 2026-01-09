@@ -64,36 +64,20 @@ gh api -X PUT "repos/$REPO/vulnerability-alerts" >/dev/null 2>&1 || true
 gh api -X PUT "repos/$REPO/automated-security-fixes" >/dev/null 2>&1 || true
 
 # -----------------------------
-# Apply branch protection (personal repo safe)
+# Apply branch protection (develop & main)
 # -----------------------------
-echo "🔒 Protecting 'develop' and 'main' branches..."
-
-BRANCH_PROTECTION_JSON=$(mktemp)
-cat > "$BRANCH_PROTECTION_JSON" << EOF
-{
-  "required_status_checks": {
-    "strict": true,
-    "contexts": ["ci"]
-  },
-  "enforce_admins": true,
-  "required_pull_request_reviews": {
-    "required_approving_review_count": 1
-  },
-  "restrictions": null
-}
-EOF
-
-# Protect develop
-gh api -X PUT "repos/$REPO/branches/develop/protection" \
-  -H "Accept: application/vnd.github+json" \
-  --input "$BRANCH_PROTECTION_JSON"
-
-# Protect main
-gh api -X PUT "repos/$REPO/branches/main/protection" \
-  -H "Accept: application/vnd.github+json" \
-  --input "$BRANCH_PROTECTION_JSON"
-
-rm "$BRANCH_PROTECTION_JSON"
+echo "🔒 Protecting branches..."
+for branch in develop main; do
+  echo "Protecting '$branch' branch..."
+  gh api -X PUT "repos/$REPO/branches/$branch/protection" \
+    -H "Accept: application/vnd.github+json" \
+    -f required_status_checks.strict=true \
+    -f required_status_checks.contexts='["ci"]' \
+    -f enforce_admins=true \
+    -f required_pull_request_reviews.dismiss_stale_reviews=false \
+    -f required_pull_request_reviews.require_code_owner_reviews=false \
+    -f required_pull_request_reviews.required_approving_review_count=1
+done
 
 # -----------------------------
 # Add badges & banner to README
@@ -116,10 +100,21 @@ if ! grep -q "vibe-coder-banner" "$README_FILE"; then
   echo -e "\n![Vibe Coder Banner](https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif)" >> "$README_FILE"
 fi
 
-# Stage & commit README changes
+# -----------------------------
+# Push changes via PR (Option 2)
+# -----------------------------
+TMP_BRANCH="bootstrap-readme-$(date +%s)"
+git checkout -b "$TMP_BRANCH"
 git add "$README_FILE"
 git commit -m "chore: add default badges & banner to README" || true
-git push origin develop
+git push -u origin "$TMP_BRANCH"
+
+echo "📬 Creating pull request into 'develop'..."
+gh pr create \
+  --title "chore: add default badges & banner" \
+  --body "Bootstrap badges & banner for template" \
+  --base develop \
+  --head "$TMP_BRANCH"
 
 # -----------------------------
 # Final message
@@ -128,6 +123,7 @@ echo ""
 echo "✅ Vibe Coder Template bootstrap complete!"
 echo ""
 echo "Next steps:"
+echo "• Merge the PR to apply README changes"
 echo "• Push your first feature branch"
 echo "• Let CI enforce quality"
 echo ""
