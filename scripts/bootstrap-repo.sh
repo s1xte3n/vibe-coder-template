@@ -66,21 +66,27 @@ gh api -X PUT "repos/$REPO/automated-security-fixes" >/dev/null 2>&1 || true
 # -----------------------------
 # Apply branch protection
 # -----------------------------
-echo "🔒 Applying branch protection rules..."
-
-# Protect develop
+# Protect develop branch
+echo "🔒 Protecting 'develop' branch..."
 gh api -X PUT "repos/$REPO/branches/develop/protection" \
-  -F required_status_checks='{"strict":true,"contexts":["ci"]}' \
-  -F enforce_admins=true \
-  -F required_pull_request_reviews='{"required_approving_review_count":1}' \
-  -F restrictions='{"users":[],"teams":[]}'
+  -H "Accept: application/vnd.github+json" \
+  -f required_status_checks.strict=true \
+  -f required_status_checks.contexts='["ci"]' \
+  -f enforce_admins=true \
+  -f required_pull_request_reviews.required_approving_review_count=1 \
+  -f restrictions.users='[]' \
+  -f restrictions.teams='[]'
 
-# Protect main
+# Protect main branch
+echo "🔒 Protecting 'main' branch..."
 gh api -X PUT "repos/$REPO/branches/main/protection" \
-  -F required_status_checks='{"strict":true,"contexts":["ci"]}' \
-  -F enforce_admins=true \
-  -F required_pull_request_reviews='{"required_approving_review_count":1}' \
-  -F restrictions='{"users":[],"teams":[]}'
+  -H "Accept: application/vnd.github+json" \
+  -f required_status_checks.strict=true \
+  -f required_status_checks.contexts='["ci"]' \
+  -f enforce_admins=true \
+  -f required_pull_request_reviews.required_approving_review_count=1 \
+  -f restrictions.users='[]' \
+  -f restrictions.teams='[]'
 
 # -----------------------------
 # Add badges & banner to README
