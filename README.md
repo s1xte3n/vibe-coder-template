@@ -21,6 +21,7 @@ After creating a repo from this template, run:
 ```bash
 chmod +x scripts/bootstrap-repo.sh
 ./scripts/bootstrap-repo.sh
+```
 
 ## 🚀 Getting Started
 
