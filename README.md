@@ -22,112 +22,122 @@ This is not just a starter repo. It is a **workflow-enforcing template** designe
 
 ## 🚀 One-Click Repository Setup (Required)
 
-After creating a repo from this template, run:
+After creating a repository from this template, run:
 
 ```bash
 chmod +x scripts/bootstrap-repo.sh
 ./scripts/bootstrap-repo.sh
 ```
 
-This script automatically configures:
-- `develop` as the default branch
-- Branch protection on `main` and `develop`
-- CI status checks requirement
-- Repository features (issues, projects)
-- Security features (Dependabot, vulnerability alerts)
-- README badges and branding
+### What the bootstrap script does
 
-**Note:** The script adds README changes and pushes them *before* enabling branch protection, so this initial setup commit goes directly to `develop`. After that, all changes must go through pull requests.
+The script automatically and safely configures:
+
+- Creates and pushes a `develop` branch
+- Sets `develop` as the default branch
+- Enables repository features (issues, projects)
+- Enables security features (Dependabot, vulnerability alerts)
+- Adds CI, license, and branding badges to the README
+- Applies branch protection to `develop` and `main`
+- Requires the `ci` status check before merges
+
+**Important:**
+The script commits and pushes README changes *before* branch protection is enabled.
+After bootstrap completes, all changes must go through pull requests.
 
 ## 🔐 What This Template Enforces
 
-Once bootstrapped, this repository is designed to enforce:
-- Feature branches (no direct commits to `main` or `develop`)
+Once bootstrapped, the repository enforces:
+- No direct commits to `main` or `develop`
+- Feature branches only
 - Pull requests for all changes
-- CI checks must pass before merge
-- Automated linting and formatting
+- CI must pass before merge
+- Linting and formatting enforced by CI
 - Pre-commit checks via Husky
-- Release-ready structure
 - Security-first defaults
 
-This template intentionally nudges you into professional GitHub workflows, even for solo projects.
+This applies even to solo projects.
 
 ## 🔁 Required GitHub Workflow
 
-This repository assumes the following workflow:
+### 1. Create a feature branch
+```bash
+git checkout develop
+git pull
+git checkout -b feature/your-feature-name
+```
 
-1. **Create a feature branch** from `develop`
-   ```bash
-   git checkout develop
-   git pull
-   git checkout -b feature/your-feature-name
-   ```
+### 2. Commit small, meaningful changes
+```bash
+git add .
+git commit -m "feat: add your feature"
+git push -u origin feature/your-feature-name
+```
 
-2. **Commit small, meaningful changes**
-   ```bash
-   git add .
-   git commit -m "feat: add your feature"
-   git push -u origin feature/your-feature-name
-   ```
+### 3. Open a pull request → `develop`
+- CI runs automatically
+- Review your own changes
+- Fix failures until green
 
-3. **Open a pull request** targeting `develop`
-   - CI runs automatically
-   - Review your own changes
-   - Ensure all checks pass
+### 4. Merge when green
+- CI must pass
+- Merge via GitHub UI
+- No direct pushes to protected branches
 
-4. **Merge when green**
-   - No approval required for solo projects
-   - CI must pass before merge
-   - Merge via GitHub UI
-
-5. **Deploy to production** via `main`
-   - When ready for production, create a PR from `develop` to `main`
-   - This represents a release candidate
-   - Merge to `main` triggers production deployment
-
-Direct commits to protected branches are intentionally blocked.
+### 5. Release to production
+- Open a PR from `develop` → `main`
+- This represents a release candidate
+- Merging to `main` is a production event
 
 ## 🤖 Automation & CI
 
 GitHub Actions is used to:
+- Install dependencies
 - Lint JavaScript / JSX
-- Enforce formatting standards
-- Catch issues before merge
-- Prepare artifacts for future deployment
+- Run tests
+- Enforce consistent quality gates
 
 All workflows live in:
 ```
 .github/workflows/
 ```
 
-The bootstrap script configures both `main` and `develop` to require the `ci` status check to pass before any PR can be merged.
+### CI enforcement details
+
+Both `develop` and `main` require the `ci` check to pass before merges.
+
+If CI is missing or misconfigured, merges are blocked.
+
+**"ci — Expected — Waiting for status" means:**
+- The workflow name or trigger does not match the required check
+- Or CI has never run on that branch yet
+
+**This is intentional. CI must be real, not assumed.**
 
 ## 🔍 Security & Quality
 
-This template is compatible with GitHub's security features:
+Compatible with GitHub security tooling:
 - Dependency Graph
-- Dependabot alerts (auto-enabled by bootstrap script)
+- Dependabot alerts
 - Dependabot version updates
 - Secret scanning
-- Code scanning (CodeQL)
+- Code scanning (CodeQL-ready)
 
-The bootstrap script automatically enables vulnerability alerts and automated security fixes where available.
+The bootstrap script enables vulnerability alerts and automated fixes where available.
 
 ## 📦 Releases & Versioning
 
-This repository supports:
-- Release branches
-- Tagged versions
-- Hotfix workflows
-- GitHub Releases
+Supported flows:
+- Feature branches → `develop`
+- Release PRs → `main`
+- Tagged releases
+- Hotfix branches (if needed)
 
-**Recommended flow:**
-- `develop` = active development
-- `main` = production-ready code
-- Feature branches merge into `develop`
-- `develop` merges into `main` for releases
+**Branch intent:**
+- `develop` → active development
+- `main` → production-ready code
 
-Releases should represent intentional, documented milestones, not random snapshots.
+Releases should be intentional and documented.
 
 ## 🚀 Getting Started
 
@@ -148,7 +158,7 @@ npm run dev
 npm run dev:backend
 ```
 
-### Testing
+### Run tests
 ```bash
 npm test
 ```
@@ -170,7 +180,7 @@ vibe-coder-template/
 ├── packages/             # Shared libraries
 ├── infra/                # Infrastructure definitions
 ├── docs/                 # Architecture, decisions, roadmap
-├── scripts/              # Repo automation (including bootstrap)
+├── scripts/              # Repo automation (bootstrap lives here)
 ├── .editorconfig
 ├── .env.example
 ├── eslint.config.mjs
@@ -178,7 +188,7 @@ vibe-coder-template/
 └── README.md
 ```
 
-See `/docs/architecture.md` for full breakdown.
+See `/docs/architecture.md` for deeper details.
 
 ## 🗺 Roadmap
 
@@ -190,32 +200,32 @@ See `/docs/architecture.md` for full breakdown.
 
 ## 🧠 Rules of the Repo
 
-- No secrets in code - ever
+- No secrets in code — ever
 - Every change goes through a PR (except initial bootstrap)
-- Every feature has a purpose
-- Automation is non-negotiable
-- Quality is enforced, not hoped for
 - CI must pass before merge
+- Automation is mandatory
+- Quality is enforced, not hoped for
+- If something hurts, automate it
 
-## 💡 What You'll Practice Using This Template
+## 💡 What You Practice With This Template
 
-By using this template correctly, you will practice:
-- GitHub repositories, branches, commits, and pull requests
-- Pull request reviews and feedback cycles (even reviewing your own work)
+Using this template trains you in:
+- Professional GitHub workflows
+- Branching strategies
+- Pull request discipline
+- CI/CD troubleshooting
 - Merge conflict resolution
-- GitHub Actions CI pipelines
-- Linting and formatting automation
-- Release management and versioning
-- Branch protection and workflow enforcement
-- Secure coding and dependency hygiene
-- Professional repository structure and documentation
+- Release hygiene
+- Security-aware development
+- Production-ready repo structure
 
 ## 🏁 Final Note
 
-This template is opinionated on purpose.
+This template is opinionated by design.
 
-If you follow it, you won't just build projects — you'll build confidence, discipline, and credibility as a developer.
+Follow it, and you won't just ship projects — you'll build engineering discipline that scales with you.
 
-Even working solo, treating your code with the same rigor as a team project will level up your engineering habits.
+**Treat solo work like team work.**  
+**Future you will thank you.**
 
 Happy shipping 🚀
