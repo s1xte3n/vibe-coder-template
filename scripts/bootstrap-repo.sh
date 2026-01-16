@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+
 echo "🚀 Bootstrapping Vibe Coder Template repository..."
 
 # -----------------------------
@@ -37,6 +38,7 @@ if git show-ref --quiet refs/heads/develop; then
 else
   git checkout -b develop
 fi
+
 git push -u origin develop || true
 
 # -----------------------------
@@ -67,22 +69,18 @@ gh api -X PUT "repos/$REPO/automated-security-fixes" >/dev/null 2>&1 || true
 echo "🏷 Adding default badges & banner to README..."
 README_FILE="README.md"
 
-# CI badge
-if ! grep -q "workflow/status" "$README_FILE"; then
+if ! grep -q "actions/workflows/ci.yml" "$README_FILE"; then
   echo -e "\n![CI](https://github.com/$REPO/actions/workflows/ci.yml/badge.svg)" >> "$README_FILE"
 fi
 
-# License badge
-if ! grep -q "license" "$README_FILE"; then
+if ! grep -qi "license" "$README_FILE"; then
   echo -e "\n![License](https://img.shields.io/badge/license-MIT-green.svg)" >> "$README_FILE"
 fi
 
-# Banner GIF
 if ! grep -q "vibe-coder-banner" "$README_FILE"; then
   echo -e "\n![Vibe Coder Banner](https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif)" >> "$README_FILE"
 fi
 
-# Stage & commit README changes on develop branch (BEFORE protection is enabled)
 if git diff --quiet "$README_FILE"; then
   echo "ℹ️  No README changes to commit"
 else
@@ -92,8 +90,10 @@ else
 fi
 
 # -----------------------------
-# Apply branch protection (personal repo safe)
+# Branch protection payloads
+# (Schema-safe, never invalid)
 # -----------------------------
+
 echo "🔒 Protecting 'develop' branch..."
 gh api -X PUT "repos/$REPO/branches/develop/protection" \
   -H "Accept: application/vnd.github+json" \
@@ -104,8 +104,16 @@ gh api -X PUT "repos/$REPO/branches/develop/protection" \
     "contexts": ["ci"]
   },
   "enforce_admins": true,
-  "required_pull_request_reviews": null,
-  "restrictions": null,
+  "required_pull_request_reviews": {
+    "dismiss_stale_reviews": false,
+    "require_code_owner_reviews": false,
+    "required_approving_review_count": 0
+  },
+  "restrictions": {
+    "users": [],
+    "teams": [],
+    "apps": []
+  },
   "allow_force_pushes": false,
   "allow_deletions": false
 }
@@ -122,9 +130,15 @@ gh api -X PUT "repos/$REPO/branches/main/protection" \
   },
   "enforce_admins": true,
   "required_pull_request_reviews": {
-    "required_approving_review_count": null
+    "dismiss_stale_reviews": true,
+    "require_code_owner_reviews": false,
+    "required_approving_review_count": 1
   },
-  "restrictions": null,
+  "restrictions": {
+    "users": [],
+    "teams": [],
+    "apps": []
+  },
   "allow_force_pushes": false,
   "allow_deletions": false
 }
@@ -137,7 +151,8 @@ echo ""
 echo "✅ Vibe Coder Template bootstrap complete!"
 echo ""
 echo "Next steps:"
-echo "• Push your first feature branch"
+echo "• Create a feature branch"
+echo "• Open a PR into develop"
 echo "• Let CI enforce quality"
 echo ""
 echo "🧠 Remember: automate early, commit often, ship calmly."
