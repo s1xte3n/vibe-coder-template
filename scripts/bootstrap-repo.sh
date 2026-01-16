@@ -27,7 +27,10 @@ fi
 # Repo Info
 # -----------------------------
 REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+OWNER_TYPE=$(gh repo view "$REPO" --json owner -q '.owner.__typename')
+
 echo "📦 Repo: $REPO"
+echo "👤 Owner type: $OWNER_TYPE"
 
 # -----------------------------
 # Ensure develop branch exists
@@ -64,7 +67,7 @@ gh api -X PUT "repos/$REPO/vulnerability-alerts" >/dev/null 2>&1 || true
 gh api -X PUT "repos/$REPO/automated-security-fixes" >/dev/null 2>&1 || true
 
 # -----------------------------
-# Add badges & banner to README (BEFORE protection)
+# Add badges & banner to README
 # -----------------------------
 echo "🏷 Adding default badges & banner to README..."
 README_FILE="README.md"
@@ -90,9 +93,13 @@ else
 fi
 
 # -----------------------------
-# Branch protection payloads
-# (Schema-safe, never invalid)
+# Branch protection (schema-safe)
 # -----------------------------
+if [ "$OWNER_TYPE" = "Organization" ]; then
+  RESTRICTIONS='{"users":[],"teams":[],"apps":[]}'
+else
+  RESTRICTIONS='null'
+fi
 
 echo "🔒 Protecting 'develop' branch..."
 gh api -X PUT "repos/$REPO/branches/develop/protection" \
@@ -109,11 +116,7 @@ gh api -X PUT "repos/$REPO/branches/develop/protection" \
     "require_code_owner_reviews": false,
     "required_approving_review_count": 0
   },
-  "restrictions": {
-    "users": [],
-    "teams": [],
-    "apps": []
-  },
+  "restrictions": $RESTRICTIONS,
   "allow_force_pushes": false,
   "allow_deletions": false
 }
@@ -134,11 +137,7 @@ gh api -X PUT "repos/$REPO/branches/main/protection" \
     "require_code_owner_reviews": false,
     "required_approving_review_count": 1
   },
-  "restrictions": {
-    "users": [],
-    "teams": [],
-    "apps": []
-  },
+  "restrictions": $RESTRICTIONS,
   "allow_force_pushes": false,
   "allow_deletions": false
 }
