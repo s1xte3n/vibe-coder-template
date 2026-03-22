@@ -172,15 +172,21 @@ Tests are expected for:
 
 ```
 vibe-coder-template/
-├── .github/              # CI workflows, PR templates
-├── .husky/               # Git hooks
+├── .github/ # CI workflows, PR templates
+├── .husky/ # Git hooks
 ├── apps/
-│   ├── frontend/         # React app
-│   └── backend/          # API / server
-├── packages/             # Shared libraries
-├── infra/                # Infrastructure definitions
-├── docs/                 # Architecture, decisions, roadmap
-├── scripts/              # Repo automation (bootstrap lives here)
+│ ├── frontend/ # React app
+│ └── backend/ # API / server
+├── packages/ # Shared libraries
+├── infra/ # Infrastructure definitions
+├── docs/
+│ ├── architecture.md # System design
+│ ├── context.md # Project purpose & scope
+│ ├── decisions.md # Engineering decisions (ADR)
+│ ├── runbook.md # Debugging & operations guide
+│ ├── tasks.md # Lightweight task tracking
+│ └── roadmap.md # Future plans
+├── scripts/ # Repo automation (bootstrap)
 ├── .editorconfig
 ├── .env.example
 ├── eslint.config.mjs
