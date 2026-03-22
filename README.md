@@ -213,6 +213,71 @@ See `/docs/architecture.md` for deeper details.
 - Quality is enforced, not hoped for
 - If something hurts, automate it
 
+## 📚 Documentation System
+
+This template includes a structured `/docs` system to enforce clarity and maintainability.
+
+### `context.md`
+Defines:
+- What the project is
+- Why it exists
+- Key constraints and assumptions
+
+Think: product + business context.
+
+---
+
+### `decisions.md`
+Tracks important engineering decisions.
+
+Format (ADR-style):
+- Decision
+- Context
+- Options considered
+- Final choice
+- Trade-offs
+
+Prevents re-discussing the same problems repeatedly.
+
+---
+
+### `runbook.md`
+Operational guide for the system.
+
+Includes:
+- How to run locally
+- How to deploy
+- Common errors and fixes
+- Debugging steps (CloudWatch, logs, etc.)
+
+Think: “What to do when things break.”
+
+---
+
+### `tasks.md`
+Lightweight task tracking inside the repo.
+
+Used for:
+- Features
+- Bugs
+- Improvements
+
+Recommended format:
+- Status (Todo / In Progress / Done)
+- Priority
+- Description
+
+---
+
+### Why this matters
+
+Most projects fail due to:
+- Lost context
+- Repeated decisions
+- Poor debugging visibility
+
+This system prevents that.
+
 ## 💡 What You Practice With This Template
 
 Using this template trains you in:
